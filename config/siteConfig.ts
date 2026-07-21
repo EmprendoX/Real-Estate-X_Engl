@@ -44,20 +44,20 @@ export const siteConfig: SiteConfig = {
   // ============================================
   // SITE INFORMATION
   // ============================================
-  siteName: "RealEX",
+  siteName: "Cardone Real Estate",
   siteUrl: "https://realestatex.com",
-  logoText: "RealEX",
+  logoText: "Cardone Real Estate",
   logoUrl: undefined,
   heroImage: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1920",
   primaryColor: "#008cb4",
   secondaryColor: "#004d65",
-  
+
   // ============================================
   // BROKER DATA
   // ============================================
-  businessType: "broker",
-  brokerName: "Juan Pérez",
-  agentsCount: undefined,
+  businessType: "agencia",
+  brokerName: "Cardone Real Estate",
+  agentsCount: 25,
   developmentName: undefined,
   phone: "+52 55 1234 5678",
   whatsapp: "5215512345678",

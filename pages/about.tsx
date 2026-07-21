@@ -45,38 +45,40 @@ export default function AboutPage() {
             </p>
           </div>
 
-          {/* Photo and name */}
-          <div className="bg-white rounded-lg shadow-md p-8 mb-8">
-            <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
-              <div className="relative w-48 h-48 rounded-full overflow-hidden flex-shrink-0">
-                <Image
-                  src={aboutContent.brokerPhoto}
-                  alt={siteConfig.brokerName}
-                  fill
-                  className="object-cover"
-                  sizes="192px"
-                />
-              </div>
-              <div className="flex-1 text-center md:text-left">
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                  {siteConfig.brokerName}
-                </h2>
-                <p className="text-xl text-primary mb-4">{aboutContent.role}</p>
-                <p className="text-gray-600 mb-4">📍 {siteConfig.city}</p>
-                <div className="flex flex-wrap gap-4 justify-center md:justify-start">
-                  <a
-                    href={`tel:${siteConfig.phone}`}
-                    className="text-gray-600 hover:text-primary transition-colors"
-                  >
-                    📞 {siteConfig.phone}
-                  </a>
-                  <a
-                    href={`mailto:${siteConfig.email}`}
-                    className="text-gray-600 hover:text-primary transition-colors"
-                  >
-                    ✉️ {siteConfig.email}
-                  </a>
-                </div>
+          {/* Agency hero */}
+          <div className="relative rounded-xl overflow-hidden shadow-lg mb-8 h-72 md:h-96">
+            <Image
+              src={aboutContent.brokerPhoto}
+              alt={siteConfig.brokerName}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 1024px"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/50 to-black/10" />
+            <div className="absolute inset-x-0 bottom-0 p-6 md:p-10 text-white">
+              <span className="inline-block bg-white/10 backdrop-blur-sm border border-white/25 rounded-full px-3 py-1 text-xs md:text-sm font-medium mb-3 uppercase tracking-wider">
+                {aboutContent.role}
+              </span>
+              <h2 className="text-3xl md:text-5xl font-bold mb-2 tracking-tight">
+                {siteConfig.brokerName}
+              </h2>
+              <p className="text-white/80 mb-4 text-sm md:text-base">
+                📍 {siteConfig.city}
+              </p>
+              <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm md:text-base">
+                <a
+                  href={`tel:${siteConfig.phone}`}
+                  className="text-white/90 hover:text-white transition-colors"
+                >
+                  📞 {siteConfig.phone}
+                </a>
+                <a
+                  href={`mailto:${siteConfig.email}`}
+                  className="text-white/90 hover:text-white transition-colors"
+                >
+                  ✉️ {siteConfig.email}
+                </a>
               </div>
             </div>
           </div>
@@ -84,7 +86,7 @@ export default function AboutPage() {
           {/* Bio */}
           <div className="bg-white rounded-lg shadow-md p-8 mb-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              {aboutContent.bio.heading}
+              {renderTemplate(aboutContent.bio.heading, tplVars)}
             </h2>
             {aboutContent.bio.paragraphs.map((p, i) => (
               <p
@@ -101,7 +103,7 @@ export default function AboutPage() {
           {/* How I work */}
           <div className="bg-white rounded-lg shadow-md p-8 mb-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              {aboutContent.howIWork.heading}
+              {renderTemplate(aboutContent.howIWork.heading, tplVars)}
             </h2>
             <p className="text-gray-700 leading-relaxed mb-4">
               {renderTemplate(aboutContent.howIWork.intro, tplVars)}
@@ -124,7 +126,7 @@ export default function AboutPage() {
           {/* Why work with me */}
           <div className="bg-white rounded-lg shadow-md p-8 mb-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              {aboutContent.whyMe.heading}
+              {renderTemplate(aboutContent.whyMe.heading, tplVars)}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {aboutContent.whyMe.items.map((item, i) => (

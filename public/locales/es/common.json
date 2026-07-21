@@ -2,7 +2,7 @@
   "nav": {
     "home": "Inicio",
     "properties": "Propiedades",
-    "about": "Sobre mí",
+    "about": "Nosotros",
     "contact": "Contacto",
     "favorites": "Favoritos"
   },
@@ -192,13 +192,13 @@
     "contactWhatsapp": "💬 Contactar por WhatsApp"
   },
   "about": {
-    "metaTitle": "Sobre mí",
-    "metaDescription": "Conoce más sobre {{name}}, tu asesor inmobiliario en {{city}}",
-    "servicesMessage": "Hola, me gustaría conocer más sobre tus servicios.",
-    "heading": "Sobre mí",
-    "subtitle": "Tu asesor inmobiliario de confianza en {{city}}",
+    "metaTitle": "Nosotros",
+    "metaDescription": "Conoce a {{name}}, la agencia inmobiliaria de referencia en {{city}}",
+    "servicesMessage": "Hola, me gustaría conocer más sobre sus servicios.",
+    "heading": "Nosotros",
+    "subtitle": "Tu agencia inmobiliaria de confianza en {{city}}",
     "ctaHeading": "¿Listo para encontrar tu propiedad ideal?",
-    "ctaSubtitle": "Contáctame y juntos encontraremos el lugar perfecto para ti",
+    "ctaSubtitle": "Contáctanos y juntos encontraremos el lugar perfecto para ti",
     "contactNow": "Contactar ahora",
     "whatsapp": "WhatsApp"
   },

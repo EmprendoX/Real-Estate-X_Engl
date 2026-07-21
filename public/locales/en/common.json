@@ -2,7 +2,7 @@
   "nav": {
     "home": "Home",
     "properties": "Properties",
-    "about": "About",
+    "about": "About Us",
     "contact": "Contact",
     "favorites": "Favorites"
   },
@@ -192,13 +192,13 @@
     "contactWhatsapp": "💬 Contact via WhatsApp"
   },
   "about": {
-    "metaTitle": "About",
-    "metaDescription": "Learn more about {{name}}, your real estate advisor in {{city}}",
+    "metaTitle": "About Us",
+    "metaDescription": "Meet {{name}}, the reference real estate agency in {{city}}",
     "servicesMessage": "Hi, I'd like to learn more about your services.",
-    "heading": "About me",
-    "subtitle": "Your trusted real estate advisor in {{city}}",
+    "heading": "About Us",
+    "subtitle": "Your trusted real estate agency in {{city}}",
     "ctaHeading": "Ready to find your ideal property?",
-    "ctaSubtitle": "Contact me and together we'll find the perfect place for you",
+    "ctaSubtitle": "Contact us and together we'll find the perfect place for you",
     "contactNow": "Contact now",
     "whatsapp": "WhatsApp"
   },

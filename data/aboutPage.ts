@@ -42,70 +42,74 @@ export interface AboutContent {
 
 export const aboutContent: AboutContent = {
   brokerPhoto:
-    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
-  role: "Broker Inmobiliario",
+    "https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=1600&q=80",
+  role: "Agencia Inmobiliaria Boutique",
 
   homeIntro: {
-    heading: "Tu asesor inmobiliario en {{city}}",
+    heading: "La agencia inmobiliaria de referencia en {{city}}",
     paragraphs: [
-      "Con años de experiencia en el mercado inmobiliario, me especializo en ayudar a personas y familias a encontrar su hogar ideal. Mi compromiso es brindarte un servicio personalizado y profesional que supere tus expectativas.",
-      "Trabajo con las mejores propiedades en {{city}}, desde departamentos modernos hasta casas familiares, siempre buscando la mejor opción para cada cliente.",
-      "Mi objetivo es hacer que el proceso de compra o renta de tu propiedad sea sencillo, transparente y exitoso.",
+      "En {{brokerName}} representamos las propiedades más exclusivas de {{city}}. Un equipo curado de más de 25 asesores senior, cada uno especializado en zonas prime y segmentos de alto valor.",
+      "No mostramos catálogos: diseñamos búsquedas. Cada cliente recibe un dossier personalizado con propiedades pre-filtradas por nuestros analistas, agendas coordinadas y asesoría legal y financiera integrada.",
+      "Marcamos el estándar del mercado. Discreción absoluta, procesos impecables y resultados que hablan por nosotros.",
     ],
   },
 
   bio: {
-    heading: "Quién soy",
+    heading: "Quiénes somos",
     paragraphs: [
-      "Soy {{brokerName}}, un profesional del sector inmobiliario con años de experiencia ayudando a personas y familias a encontrar su hogar ideal en {{city}}. Mi pasión por el sector inmobiliario comenzó cuando me di cuenta de lo importante que es encontrar el lugar perfecto para vivir.",
-      "Mi objetivo es brindar un servicio personalizado, transparente y profesional que supere las expectativas de cada cliente. Trabajo con dedicación para entender tus necesidades y encontrar la propiedad que mejor se adapte a tu estilo de vida y presupuesto.",
+      "{{brokerName}} es una agencia inmobiliaria boutique fundada por profesionales del sector con trayectoria en desarrollos residenciales, comerciales y de alto patrimonio en {{city}}. Nacimos con una convicción: el mercado premium merece un nivel de servicio que la mayoría de las agencias tradicionales no está preparada para ofrecer.",
+      "Hoy operamos con un equipo de 25 asesores, analistas de mercado y abogados especializados. Trabajamos por referidos y con carteras seleccionadas, lo que nos permite dedicar a cada operación el tiempo, la investigación y la discreción que exige.",
+      "Nuestros clientes son familias, inversionistas y desarrolladores que valoran hacer las cosas bien la primera vez.",
     ],
   },
 
   howIWork: {
-    heading: "Cómo trabajo",
-    intro: "Mi metodología se basa en tres pilares fundamentales:",
+    heading: "Cómo trabajamos",
+    intro:
+      "Nuestra metodología se apoya en tres principios que definen cada operación que asesoramos:",
     pillars: [
       {
-        title: "Escucha activa",
+        title: "Estrategia antes que catálogo",
         description:
-          "Me tomo el tiempo necesario para entender tus necesidades, deseos y presupuesto.",
+          "Comenzamos con una sesión de descubrimiento para entender objetivo, plazos y perfil patrimonial. Recién entonces activamos la búsqueda o la campaña de venta.",
       },
       {
-        title: "Selección cuidadosa",
+        title: "Curaduría, no volumen",
         description:
-          "Te presento solo las propiedades que realmente cumplen con tus criterios, ahorrándote tiempo y esfuerzo.",
+          "Cada propiedad que ponemos sobre la mesa pasa por nuestro filtro de precio, ubicación, plusvalía y estado legal. Priorizamos la calidad del portafolio sobre la cantidad de opciones.",
       },
       {
-        title: "Acompañamiento completo",
+        title: "Cierre integrado",
         description:
-          "Te guío en cada paso del proceso, desde la búsqueda hasta la firma de documentos.",
+          "Coordinamos abogados, notarios, financieras y asesores fiscales bajo un único punto de contacto. Usted firma; nosotros nos encargamos del resto.",
       },
     ],
     outro:
-      "Trabajo con las mejores propiedades disponibles en el mercado, desde departamentos modernos hasta casas familiares, siempre buscando la mejor opción para cada cliente.",
+      "Operamos con propiedades premium en {{city}}: residencias, penthouses, terrenos con potencial de desarrollo y activos comerciales seleccionados.",
   },
 
   whyMe: {
-    heading: "Por qué trabajar conmigo",
+    heading: "Por qué elegir {{brokerName}}",
     items: [
       {
-        title: "Experiencia comprobada",
+        title: "Equipo senior",
         description:
-          "Años de experiencia en el mercado inmobiliario de {{city}}.",
+          "Más de 25 asesores con trayectoria comprobada en el mercado inmobiliario de {{city}}.",
       },
       {
-        title: "Atención personalizada",
-        description: "Cada cliente es único y merece un servicio a su medida.",
-      },
-      {
-        title: "Transparencia total",
-        description: "Información clara y honesta en cada paso del proceso.",
-      },
-      {
-        title: "Compromiso con resultados",
+        title: "Servicio boutique",
         description:
-          "Trabajo incansablemente hasta encontrar tu propiedad ideal.",
+          "Portafolio curado, atención dedicada y acceso a operaciones off-market que no verá en portales.",
+      },
+      {
+        title: "Discreción y confianza",
+        description:
+          "Contratos claros, comunicación directa y confidencialidad absoluta en cada operación.",
+      },
+      {
+        title: "Resultados medibles",
+        description:
+          "Tiempos de venta por debajo del promedio de mercado y precios de cierre alineados a valuaciones profesionales.",
       },
     ],
   },
@@ -117,68 +121,74 @@ export const aboutContent: AboutContent = {
  */
 export const aboutContentEn: AboutContent = {
   brokerPhoto:
-    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
-  role: "Real Estate Broker",
+    "https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=1600&q=80",
+  role: "Boutique Real Estate Agency",
 
   homeIntro: {
-    heading: "Your real estate advisor in {{city}}",
+    heading: "The reference real estate agency in {{city}}",
     paragraphs: [
-      "With years of experience in the real estate market, I specialize in helping individuals and families find their ideal home. My commitment is to give you a personalized, professional service that exceeds your expectations.",
-      "I work with the best properties in {{city}}, from modern apartments to family homes, always looking for the best option for each client.",
-      "My goal is to make the process of buying or renting your property simple, transparent and successful.",
+      "At {{brokerName}} we represent the most exclusive properties in {{city}}. A curated team of 25+ senior advisors, each one specialized in prime areas and high-value segments.",
+      "We don't send catalogs — we design searches. Every client receives a personalized dossier of properties pre-filtered by our analysts, coordinated viewings, and integrated legal and financial advisory.",
+      "We set the market standard. Absolute discretion, impeccable processes, and results that speak for themselves.",
     ],
   },
 
   bio: {
-    heading: "Who I am",
+    heading: "Who we are",
     paragraphs: [
-      "I'm {{brokerName}}, a real estate professional with years of experience helping individuals and families find their ideal home in {{city}}. My passion for real estate began when I realized how important it is to find the perfect place to live.",
-      "My goal is to provide a personalized, transparent and professional service that exceeds every client's expectations. I work with dedication to understand your needs and find the property that best fits your lifestyle and budget.",
+      "{{brokerName}} is a boutique real estate agency founded by industry professionals with backgrounds in residential, commercial, and high-net-worth developments across {{city}}. We started with one conviction: the premium market deserves a level of service that most traditional agencies aren't equipped to deliver.",
+      "Today we operate with a team of 25 advisors, market analysts, and specialized attorneys. We work by referral and with selected portfolios, which lets us dedicate to each transaction the time, research, and discretion it demands.",
+      "Our clients are families, investors, and developers who value getting things right the first time.",
     ],
   },
 
   howIWork: {
-    heading: "How I work",
-    intro: "My approach is built on three core pillars:",
+    heading: "How we work",
+    intro:
+      "Our approach rests on three principles that define every transaction we advise on:",
     pillars: [
       {
-        title: "Active listening",
+        title: "Strategy before catalog",
         description:
-          "I take the time needed to understand your needs, wishes and budget.",
+          "We begin with a discovery session to understand your objective, timeline, and portfolio profile. Only then do we activate the search or the sales campaign.",
       },
       {
-        title: "Careful selection",
+        title: "Curation, not volume",
         description:
-          "I only show you properties that truly meet your criteria, saving you time and effort.",
+          "Every property we bring to the table passes our filter on price, location, appreciation potential, and legal standing. We prioritize portfolio quality over option count.",
       },
       {
-        title: "Full support",
+        title: "Integrated closing",
         description:
-          "I guide you through every step of the process, from the search to signing the paperwork.",
+          "We coordinate attorneys, notaries, financing, and tax advisors under a single point of contact. You sign; we handle the rest.",
       },
     ],
     outro:
-      "I work with the best properties available on the market, from modern apartments to family homes, always looking for the best option for each client.",
+      "We operate in the premium {{city}} market: residences, penthouses, development-ready land, and select commercial assets.",
   },
 
   whyMe: {
-    heading: "Why work with me",
+    heading: "Why choose {{brokerName}}",
     items: [
       {
-        title: "Proven experience",
-        description: "Years of experience in the {{city}} real estate market.",
+        title: "Senior team",
+        description:
+          "25+ advisors with proven track record in the {{city}} real estate market.",
       },
       {
-        title: "Personalized attention",
-        description: "Every client is unique and deserves a tailored service.",
+        title: "Boutique service",
+        description:
+          "Curated portfolio, dedicated attention, and access to off-market deals you won't see on public listings.",
       },
       {
-        title: "Full transparency",
-        description: "Clear and honest information at every step of the process.",
+        title: "Discretion and trust",
+        description:
+          "Clear contracts, direct communication, and absolute confidentiality on every transaction.",
       },
       {
-        title: "Commitment to results",
-        description: "I work tirelessly until I find your ideal property.",
+        title: "Measurable results",
+        description:
+          "Sale timelines below market average and closing prices aligned with professional appraisals.",
       },
     ],
   },
