@@ -24,7 +24,17 @@ const SITE_KEY = "site-config.json";
 const PROPERTIES_KEY = "properties.json";
 const IMAGES_PREFIX = "images/";
 
-const isNetlify = process.env.NETLIFY === "true";
+// Netlify sets `NETLIFY=true` at BUILD time, but does not reliably expose it
+// to Next.js SSR/API Lambda functions at runtime. Detect the deployed runtime
+// via signals that ARE always present on Lambda + Netlify:
+//   - LAMBDA_TASK_ROOT: set by AWS Lambda (Netlify Functions run on Lambda).
+//   - NETLIFY_BLOBS_CONTEXT: injected by the Netlify Next.js plugin for
+//     Blobs access — its presence guarantees Blobs will work.
+//   - NETLIFY=true: still true at build time (matters for pre-render).
+const isNetlify =
+  process.env.NETLIFY === "true" ||
+  !!process.env.NETLIFY_BLOBS_CONTEXT ||
+  !!process.env.LAMBDA_TASK_ROOT;
 
 function siteStore() {
   return getStore({ name: "site-data", consistency: "strong" });
