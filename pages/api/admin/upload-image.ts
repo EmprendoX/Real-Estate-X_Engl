@@ -90,9 +90,13 @@ export default async function handler(
     });
   } catch (error) {
     console.error("Error uploading image:", error);
+    // Surface the real error message so Netlify-side issues (missing Blobs
+    // context, etc.) are diagnosable from the admin UI instead of the
+    // function logs. Prefix so operators know where to look.
+    const detail = error instanceof Error ? error.message : String(error);
     return res.status(500).json({
       ok: false,
-      message: "Error uploading the image",
+      message: `Error uploading the image: ${detail}`,
     });
   }
 }
