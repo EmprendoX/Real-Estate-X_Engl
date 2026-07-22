@@ -1,8 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import React from "react";
 import { renderToBuffer } from "@react-pdf/renderer";
-import { getPropertyBySlug, localizeProperty } from "@/data/properties";
-import { siteConfig } from "@/config/siteConfig";
+import { localizeProperty } from "@/data/properties";
+import type { SiteConfig } from "@/config/siteConfig";
+import { getEffectiveSiteConfig, getEffectiveProperties } from "@/utils/storage";
 import PropertyPDF from "@/components/pdf/PropertyPDF";
 
 /**
@@ -12,9 +13,7 @@ import PropertyPDF from "@/components/pdf/PropertyPDF";
  * It's public (any visitor can generate the PDF of any property).
  */
 
-function baseUrlFromRequest(req: NextApiRequest): string {
-  // Prefer the configured siteUrl (canonical URL) if it looks valid,
-  // otherwise fall back to the request headers — useful in preview deploys.
+function baseUrlFromRequest(req: NextApiRequest, siteConfig: SiteConfig): string {
   if (siteConfig.siteUrl && /^https?:\/\//.test(siteConfig.siteUrl)) {
     return siteConfig.siteUrl.replace(/\/$/, "");
   }
@@ -43,7 +42,11 @@ export default async function handler(
     return res.status(400).json({ ok: false, message: "Slug inválido" });
   }
 
-  const rawProperty = getPropertyBySlug(slug);
+  const [siteConfig, propertyList] = await Promise.all([
+    getEffectiveSiteConfig(),
+    getEffectiveProperties(),
+  ]);
+  const rawProperty = propertyList.find((p) => p.slug === slug);
   if (!rawProperty) {
     return res.status(404).json({ ok: false, message: "Propiedad no encontrada" });
   }
@@ -58,7 +61,7 @@ export default async function handler(
   const property = localizeProperty(rawProperty, locale);
 
   try {
-    const baseUrl = baseUrlFromRequest(req);
+    const baseUrl = baseUrlFromRequest(req, siteConfig);
     const localePrefix = locale === "en" ? "/en" : "";
     const propertyUrl = `${baseUrl}${localePrefix}/properties/${property.slug}`;
     const absoluteImages = property.images.map((img) =>

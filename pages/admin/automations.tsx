@@ -1,13 +1,19 @@
 "use client";
 
 import React, { useMemo } from "react";
+import type { GetServerSideProps } from "next";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { useDemoState } from "@/utils/useDemoState";
+import { getAdminServerSideProps } from "@/utils/pageData";
 import {
   Automation,
   DEFAULT_AUTOMATIONS,
   RUN_LOG_TEMPLATES,
 } from "@/data/demoIntegrations";
+
+export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
+  return getAdminServerSideProps(locale);
+};
 
 function relativeTime(minutesAgo: number): string {
   if (minutesAgo < 1) return "just now";

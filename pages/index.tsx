@@ -6,40 +6,40 @@ import { useTranslation } from "next-i18next";
 import Layout from "@/components/Layout";
 import PropertyGrid from "@/components/PropertyGrid";
 import TestimonialsSection from "@/components/TestimonialsSection";
-import { siteConfig } from "@/config/siteConfig";
-import { properties, getFeaturedProperties, getUniqueCities, localizeProperties, PropertyType } from "@/data/properties";
+import { useSiteConfig, useProperties } from "@/contexts/SiteDataContext";
+import { localizeProperties, PropertyType } from "@/data/properties";
 import { getTestimonials } from "@/data/testimonials";
 import { getAboutContent, renderTemplate } from "@/data/aboutPage";
 import type { GetStaticProps } from "next";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import nextI18NextConfig from "../next-i18next.config";
+import { getBaseStaticProps } from "@/utils/pageData";
 
 export const getStaticProps: GetStaticProps = async ({ locale }) => {
-  return {
-    props: {
-      ...(await serverSideTranslations(locale ?? "es", ["common"], nextI18NextConfig)),
-    },
-  };
+  return getBaseStaticProps(locale);
 };
 
 export default function Home() {
   const { t } = useTranslation("common");
   const { locale } = useRouter();
+  const siteConfig = useSiteConfig();
+  const properties = useProperties();
   const [selectedType, setSelectedType] = useState<PropertyType | "all">("all");
   const [selectedCity, setSelectedCity] = useState<string>("all");
 
   // Properties and content in the active language (with Spanish fallback).
   const localizedProperties = useMemo(
     () => localizeProperties(properties, locale),
-    [locale]
+    [locale, properties]
   );
   const [filteredProperties, setFilteredProperties] = useState(localizedProperties);
 
   const featuredProperties = useMemo(
-    () => localizeProperties(getFeaturedProperties(), locale),
-    [locale]
+    () => localizeProperties(properties.filter((p) => p.featured === true), locale),
+    [locale, properties]
   );
-  const cities = getUniqueCities();
+  const cities = useMemo(
+    () => Array.from(new Set(properties.map((p) => p.city))),
+    [properties]
+  );
   const testimonials = useMemo(
     () => getTestimonials(undefined, locale),
     [locale]

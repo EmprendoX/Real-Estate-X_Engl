@@ -4,18 +4,13 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import nextI18NextConfig from "../next-i18next.config";
 import Layout from "@/components/Layout";
-import { properties as allProperties, localizeProperties, Property } from "@/data/properties";
+import { localizeProperties, Property } from "@/data/properties";
 import { formatPrice } from "@/utils/formatPrice";
-import { siteConfig } from "@/config/siteConfig";
+import { useSiteConfig, useProperties } from "@/contexts/SiteDataContext";
+import { getBaseStaticProps } from "@/utils/pageData";
 
 const MAX_COMPARE = 3;
-
-interface ComparePageProps {
-  properties: Property[];
-}
 
 interface Row {
   label: string;
@@ -25,9 +20,16 @@ interface Row {
   highlight?: boolean;
 }
 
-export default function ComparePage({ properties: allProps }: ComparePageProps) {
+export default function ComparePage() {
   const { t } = useTranslation("common");
   const router = useRouter();
+  const { locale } = router;
+  const siteConfig = useSiteConfig();
+  const properties = useProperties();
+  const allProps = useMemo(
+    () => localizeProperties(properties, locale),
+    [properties, locale]
+  );
 
   const ROWS: Row[] = [
     {
@@ -204,12 +206,6 @@ export default function ComparePage({ properties: allProps }: ComparePageProps) 
   );
 }
 
-export const getStaticProps: GetStaticProps<ComparePageProps> = async ({ locale }) => {
-  return {
-    props: {
-      properties: localizeProperties(allProperties, locale),
-      ...(await serverSideTranslations(locale ?? "es", ["common"], nextI18NextConfig)),
-    },
-    revalidate: 60,
-  };
+export const getStaticProps: GetStaticProps = async ({ locale }) => {
+  return getBaseStaticProps(locale);
 };

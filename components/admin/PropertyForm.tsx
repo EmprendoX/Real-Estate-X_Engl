@@ -270,16 +270,35 @@ export default function PropertyForm({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Price *
             </label>
-            <input
-              type="number"
-              name="price"
-              value={formData.price}
-              onChange={handleChange}
-              required
-              min="0"
-              step="0.01"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
-            />
+            <div className="relative">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500 pointer-events-none select-none">
+                $
+              </span>
+              <input
+                type="number"
+                name="price"
+                value={formData.price ? formData.price : ""}
+                onChange={handleChange}
+                required
+                min="0"
+                step="0.01"
+                inputMode="decimal"
+                placeholder="0"
+                className="w-full pl-7 pr-16 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
+              />
+              <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 text-sm pointer-events-none select-none">
+                {formData.currency}
+              </span>
+            </div>
+            {formData.price > 0 && (
+              <p className="mt-1 text-xs text-gray-500">
+                {new Intl.NumberFormat("es-MX", {
+                  style: "currency",
+                  currency: formData.currency,
+                  maximumFractionDigits: 0,
+                }).format(formData.price)}
+              </p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -292,8 +311,8 @@ export default function PropertyForm({
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
             >
-              <option value="MXN">MXN</option>
-              <option value="USD">USD</option>
+              <option value="MXN">MXN — Mexican Pesos</option>
+              <option value="USD">USD — US Dollars</option>
             </select>
           </div>
         </div>
@@ -345,10 +364,12 @@ export default function PropertyForm({
             <input
               type="number"
               name="bedrooms"
-              value={formData.bedrooms}
+              value={formData.bedrooms ? formData.bedrooms : ""}
               onChange={handleChange}
               required
               min="0"
+              inputMode="numeric"
+              placeholder="0"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
             />
           </div>
@@ -359,10 +380,12 @@ export default function PropertyForm({
             <input
               type="number"
               name="bathrooms"
-              value={formData.bathrooms}
+              value={formData.bathrooms ? formData.bathrooms : ""}
               onChange={handleChange}
               required
               min="0"
+              inputMode="numeric"
+              placeholder="0"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
             />
           </div>
@@ -373,10 +396,12 @@ export default function PropertyForm({
             <input
               type="number"
               name="parking"
-              value={formData.parking}
+              value={formData.parking ? formData.parking : ""}
               onChange={handleChange}
               required
               min="0"
+              inputMode="numeric"
+              placeholder="0"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
             />
           </div>
@@ -387,11 +412,13 @@ export default function PropertyForm({
             <input
               type="number"
               name="area"
-              value={formData.area}
+              value={formData.area ? formData.area : ""}
               onChange={handleChange}
               required
               min="0"
               step="0.01"
+              inputMode="decimal"
+              placeholder="0"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
             />
           </div>

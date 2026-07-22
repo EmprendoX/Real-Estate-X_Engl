@@ -3,13 +3,13 @@ import { GetStaticProps } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import nextI18NextConfig from "../../next-i18next.config";
 import Layout from "@/components/Layout";
 import PropertyGrid from "@/components/PropertyGrid";
 import PropertyFiltersUI from "@/components/PropertyFilters";
 import Pagination from "@/components/Pagination";
-import { properties, getUniqueCities, localizeProperties, Property } from "@/data/properties";
+import { localizeProperties } from "@/data/properties";
+import { useProperties } from "@/contexts/SiteDataContext";
+import { getBaseStaticProps } from "@/utils/pageData";
 import {
   PropertyFilters,
   DEFAULT_FILTERS,
@@ -20,14 +20,19 @@ import {
 
 const PAGE_SIZE = 12;
 
-interface PropertiesPageProps {
-  properties: Property[];
-  cities: string[];
-}
-
-export default function PropertiesPage({ properties, cities }: PropertiesPageProps) {
+export default function PropertiesPage() {
   const { t } = useTranslation("common");
   const router = useRouter();
+  const { locale } = router;
+  const allProperties = useProperties();
+  const properties = useMemo(
+    () => localizeProperties(allProperties, locale),
+    [allProperties, locale]
+  );
+  const cities = useMemo(
+    () => Array.from(new Set(allProperties.map((p) => p.city))),
+    [allProperties]
+  );
 
   // Filters — the URL is the source of truth. We initialize to default and
   // sync when router.isReady (otherwise there would be a flash of incorrect
@@ -158,13 +163,6 @@ export default function PropertiesPage({ properties, cities }: PropertiesPagePro
   );
 }
 
-export const getStaticProps: GetStaticProps<PropertiesPageProps> = async ({ locale }) => {
-  return {
-    props: {
-      properties: localizeProperties(properties, locale),
-      cities: getUniqueCities(),
-      ...(await serverSideTranslations(locale ?? "es", ["common"], nextI18NextConfig)),
-    },
-    revalidate: 60,
-  };
+export const getStaticProps: GetStaticProps = async ({ locale }) => {
+  return getBaseStaticProps(locale);
 };

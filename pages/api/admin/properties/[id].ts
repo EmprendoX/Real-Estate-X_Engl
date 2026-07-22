@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { requireAuth } from "@/utils/adminAuth";
-import { writeProperties } from "@/utils/fileWriter";
-import { properties, Property } from "@/data/properties";
+import { getEffectiveProperties, saveProperties } from "@/utils/storage";
+import { Property } from "@/data/properties";
 
 interface PropertyResponse {
   ok: boolean;
@@ -10,7 +10,7 @@ interface PropertyResponse {
   count?: number;
 }
 
-export default function handler(
+export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<PropertyResponse>
 ) {
@@ -28,12 +28,13 @@ export default function handler(
     });
   }
 
+  const properties = await getEffectiveProperties();
+
   // PUT - Update property
   if (req.method === "PUT") {
     try {
       const updatedProperty: Property = req.body;
 
-      // Validate that the ID matches
       if (updatedProperty.id !== id) {
         return res.status(400).json({
           ok: false,
@@ -41,7 +42,6 @@ export default function handler(
         });
       }
 
-      // Find the existing property
       const propertyIndex = properties.findIndex((p) => p.id === id);
       if (propertyIndex === -1) {
         return res.status(404).json({
@@ -50,7 +50,6 @@ export default function handler(
         });
       }
 
-      // Validate that the slug is unique (if it changed)
       if (
         updatedProperty.slug !== properties[propertyIndex].slug &&
         properties.some((p) => p.slug === updatedProperty.slug && p.id !== id)
@@ -61,7 +60,6 @@ export default function handler(
         });
       }
 
-      // Validations
       if (!updatedProperty.title || !updatedProperty.slug || !updatedProperty.description) {
         return res.status(400).json({
           ok: false,
@@ -69,7 +67,6 @@ export default function handler(
         });
       }
 
-      // Validate types
       if (!["venta", "renta"].includes(updatedProperty.type)) {
         return res.status(400).json({
           ok: false,
@@ -84,10 +81,9 @@ export default function handler(
         });
       }
 
-      // Update property
       const updatedProperties = [...properties];
       updatedProperties[propertyIndex] = updatedProperty;
-      writeProperties(updatedProperties);
+      await saveProperties(updatedProperties);
 
       return res.status(200).json({
         ok: true,
@@ -115,9 +111,8 @@ export default function handler(
         });
       }
 
-      // Delete property
       const updatedProperties = properties.filter((p) => p.id !== id);
-      writeProperties(updatedProperties);
+      await saveProperties(updatedProperties);
 
       return res.status(200).json({
         ok: true,
@@ -138,5 +133,3 @@ export default function handler(
     message: "Method not allowed",
   });
 }
-
-

@@ -12,16 +12,23 @@ import PropertyTour from "@/components/PropertyTour";
 import MortgageCalculator from "@/components/MortgageCalculator";
 import ContactForm from "@/components/ContactForm";
 import ShareButton from "@/components/ShareButton";
-import { properties, getPropertyBySlug, localizeProperty, Property } from "@/data/properties";
-import { siteConfig } from "@/config/siteConfig";
+import { localizeProperty, Property } from "@/data/properties";
+import { useSiteConfig } from "@/contexts/SiteDataContext";
+import { getEffectiveProperties, getEffectiveSiteConfig } from "@/utils/storage";
+import { jsonSafe } from "@/utils/pageData";
 
 interface PropertyDetailPageProps {
   property: Property;
+  __siteData: {
+    siteConfig: import("@/config/siteConfig").SiteConfig;
+    properties: Property[];
+  };
 }
 
 export default function PropertyDetailPage({ property }: PropertyDetailPageProps) {
   const { t } = useTranslation("common");
   const { locale } = useRouter();
+  const siteConfig = useSiteConfig();
   const whatsappMessage = encodeURIComponent(
     t("propertyDetail.propertyMessage", { title: property.title })
   );
@@ -242,10 +249,11 @@ export default function PropertyDetailPage({ property }: PropertyDetailPageProps
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
+  // Only pre-render the properties baked into the template; anything the
+  // client adds later renders on-demand via fallback:"blocking".
+  const list = await getEffectiveProperties();
   return {
-    paths: properties.map((p) => ({ params: { slug: p.slug } })),
-    // blocking: if a property is added from the admin and hasn't been rebuilt yet,
-    // Next renders it on-demand instead of returning 404.
+    paths: list.map((p) => ({ params: { slug: p.slug } })),
     fallback: "blocking",
   };
 };
@@ -259,17 +267,22 @@ export const getStaticProps: GetStaticProps<PropertyDetailPageProps> = async ({
     return { notFound: true };
   }
 
-  const property = getPropertyBySlug(slug);
+  const [effectiveSite, effectiveProperties] = await Promise.all([
+    getEffectiveSiteConfig(),
+    getEffectiveProperties(),
+  ]);
+
+  const property = effectiveProperties.find((p) => p.slug === slug);
   if (!property) {
     return { notFound: true };
   }
 
   return {
     props: {
-      property: localizeProperty(property, locale),
+      property: jsonSafe(localizeProperty(property, locale)),
+      __siteData: jsonSafe({ siteConfig: effectiveSite, properties: effectiveProperties }),
       ...(await serverSideTranslations(locale ?? "es", ["common"], nextI18NextConfig)),
     },
-    // Revalidate every 60s to reflect admin changes without a redeploy
-    revalidate: 60,
+    revalidate: 30,
   };
 };

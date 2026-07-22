@@ -3,13 +3,14 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useTranslation } from "next-i18next";
-import { siteConfig } from "@/config/siteConfig";
+import { useSiteConfig } from "@/contexts/SiteDataContext";
 import FavoritesNavLink from "./FavoritesNavLink";
 import LanguageSwitcher from "./LanguageSwitcher";
 
 export default function Navbar() {
   const { t } = useTranslation("common");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const siteConfig = useSiteConfig();
 
   const whatsappMessage = encodeURIComponent(t("whatsapp.defaultMessage"));
   const whatsappUrl = `https://wa.me/${siteConfig.whatsapp}?text=${whatsappMessage}`;

@@ -2,9 +2,15 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import type { GetServerSideProps } from "next";
 import AdminLayout from "@/components/admin/AdminLayout";
 import PropertyForm from "@/components/admin/PropertyForm";
 import { Property } from "@/data/properties";
+import { getAdminServerSideProps } from "@/utils/pageData";
+
+export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
+  return getAdminServerSideProps(locale);
+};
 
 export default function EditPropertyPage() {
   const router = useRouter();

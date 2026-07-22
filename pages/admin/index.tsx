@@ -1,19 +1,22 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Link from "next/link";
+import type { GetServerSideProps } from "next";
 import AdminLayout from "@/components/admin/AdminLayout";
-import { properties, MAX_PROPERTIES } from "@/data/properties";
-import { siteConfig } from "@/config/siteConfig";
+import { MAX_PROPERTIES } from "@/data/properties";
+import { useSiteConfig, useProperties } from "@/contexts/SiteDataContext";
+import { getAdminServerSideProps } from "@/utils/pageData";
+
+export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
+  return getAdminServerSideProps(locale);
+};
 
 export default function AdminDashboard() {
-  const [propertiesCount, setPropertiesCount] = useState(0);
-  const [featuredCount, setFeaturedCount] = useState(0);
-
-  useEffect(() => {
-    setPropertiesCount(properties.length);
-    setFeaturedCount(properties.filter((p) => p.featured).length);
-  }, []);
+  const siteConfig = useSiteConfig();
+  const properties = useProperties();
+  const propertiesCount = properties.length;
+  const featuredCount = properties.filter((p) => p.featured).length;
 
   return (
     <AdminLayout>

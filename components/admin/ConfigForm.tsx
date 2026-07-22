@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { siteConfig } from "@/config/siteConfig";
 import { SiteConfig } from "@/config/siteConfig";
+import { useSiteConfig } from "@/contexts/SiteDataContext";
 
 export default function ConfigForm() {
-  const [formData, setFormData] = useState<SiteConfig>(siteConfig);
+  const currentConfig = useSiteConfig();
+  const [formData, setFormData] = useState<SiteConfig>(currentConfig);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
@@ -17,9 +18,10 @@ export default function ConfigForm() {
   const logoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    // Load the current settings
-    setFormData(siteConfig);
-  }, []);
+    // Sync the form when the effective config changes (e.g. right after a
+    // save + revalidation).
+    setFormData(currentConfig);
+  }, [currentConfig]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -264,7 +266,7 @@ export default function ConfigForm() {
               </div>
             </div>
             <input
-              type="url"
+              type="text"
               name="logoUrl"
               value={formData.logoUrl || ""}
               onChange={handleChange}
@@ -417,7 +419,7 @@ export default function ConfigForm() {
             Or paste an image URL
           </label>
           <input
-            type="url"
+            type="text"
             name="heroImage"
             value={formData.heroImage || ""}
             onChange={handleChange}

@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { requireAuth } from "@/utils/adminAuth";
-import { writeSiteConfig } from "@/utils/fileWriter";
+import { saveSiteConfig } from "@/utils/storage";
 import { SiteConfig } from "@/config/siteConfig";
 
 interface ConfigResponse {
@@ -8,7 +8,7 @@ interface ConfigResponse {
   message: string;
 }
 
-export default function handler(
+export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ConfigResponse>
 ) {
@@ -59,8 +59,8 @@ export default function handler(
       });
     }
 
-    // Save the settings
-    writeSiteConfig(config);
+    // Save the settings (Blobs on Netlify, file in dev)
+    await saveSiteConfig(config);
 
     return res.status(200).json({
       ok: true,

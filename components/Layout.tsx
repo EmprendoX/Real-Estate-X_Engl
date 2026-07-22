@@ -2,7 +2,7 @@ import React from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
-import { siteConfig } from "@/config/siteConfig";
+import { useSiteConfig } from "@/contexts/SiteDataContext";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 
@@ -34,6 +34,7 @@ export default function Layout({
 }: LayoutProps) {
   const { t } = useTranslation("common");
   const { locale } = useRouter();
+  const siteConfig = useSiteConfig();
   const ogLocale = locale === "en" ? "en_US" : "es_MX";
   const pageTitle = title
     ? `${title} | ${siteConfig.siteName}`

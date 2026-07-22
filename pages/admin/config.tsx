@@ -1,5 +1,11 @@
+import type { GetServerSideProps } from "next";
 import AdminLayout from "@/components/admin/AdminLayout";
 import ConfigForm from "@/components/admin/ConfigForm";
+import { getAdminServerSideProps } from "@/utils/pageData";
+
+export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
+  return getAdminServerSideProps(locale);
+};
 
 export default function ConfigPage() {
   return (

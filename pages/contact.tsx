@@ -1,22 +1,18 @@
 import React from "react";
 import type { GetStaticProps } from "next";
 import { useTranslation } from "next-i18next";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import nextI18NextConfig from "../next-i18next.config";
 import Layout from "@/components/Layout";
 import ContactForm from "@/components/ContactForm";
-import { siteConfig } from "@/config/siteConfig";
+import { useSiteConfig } from "@/contexts/SiteDataContext";
+import { getBaseStaticProps } from "@/utils/pageData";
 
 export const getStaticProps: GetStaticProps = async ({ locale }) => {
-  return {
-    props: {
-      ...(await serverSideTranslations(locale ?? "es", ["common"], nextI18NextConfig)),
-    },
-  };
+  return getBaseStaticProps(locale);
 };
 
 export default function ContactPage() {
   const { t } = useTranslation("common");
+  const siteConfig = useSiteConfig();
   const whatsappMessage = encodeURIComponent(t("contact.message"));
   const whatsappUrl = `https://wa.me/${siteConfig.whatsapp}?text=${whatsappMessage}`;
 

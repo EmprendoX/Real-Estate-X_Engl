@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { requireAuth } from "@/utils/adminAuth";
-import { writeProperties } from "@/utils/fileWriter";
-import { properties, Property, MAX_PROPERTIES } from "@/data/properties";
+import { getEffectiveProperties, saveProperties } from "@/utils/storage";
+import { Property, MAX_PROPERTIES } from "@/data/properties";
 
 interface PropertiesResponse {
   ok: boolean;
@@ -11,7 +11,7 @@ interface PropertiesResponse {
   count?: number;
 }
 
-export default function handler(
+export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<PropertiesResponse>
 ) {
@@ -19,6 +19,8 @@ export default function handler(
   if (!requireAuth(req, res)) {
     return;
   }
+
+  const properties = await getEffectiveProperties();
 
   // GET - List all properties
   if (req.method === "GET") {
@@ -32,7 +34,6 @@ export default function handler(
   // POST - Create new property
   if (req.method === "POST") {
     try {
-      // Validate the limit of 22 properties
       if (properties.length >= MAX_PROPERTIES) {
         return res.status(400).json({
           ok: false,
@@ -42,7 +43,6 @@ export default function handler(
 
       const newProperty: Property = req.body;
 
-      // Validations
       if (!newProperty.title || !newProperty.slug || !newProperty.description) {
         return res.status(400).json({
           ok: false,
@@ -50,7 +50,6 @@ export default function handler(
         });
       }
 
-      // Validate that the slug is unique
       if (properties.some((p) => p.slug === newProperty.slug)) {
         return res.status(400).json({
           ok: false,
@@ -58,7 +57,6 @@ export default function handler(
         });
       }
 
-      // Validate that the ID is unique
       if (properties.some((p) => p.id === newProperty.id)) {
         return res.status(400).json({
           ok: false,
@@ -66,7 +64,6 @@ export default function handler(
         });
       }
 
-      // Validate types
       if (!["venta", "renta"].includes(newProperty.type)) {
         return res.status(400).json({
           ok: false,
@@ -81,7 +78,6 @@ export default function handler(
         });
       }
 
-      // Validate numbers
       if (
         typeof newProperty.price !== "number" ||
         typeof newProperty.bedrooms !== "number" ||
@@ -95,9 +91,8 @@ export default function handler(
         });
       }
 
-      // Add new property
       const updatedProperties = [...properties, newProperty];
-      writeProperties(updatedProperties);
+      await saveProperties(updatedProperties);
 
       return res.status(200).json({
         ok: true,
@@ -119,5 +114,3 @@ export default function handler(
     message: "Method not allowed",
   });
 }
-
-

@@ -4,22 +4,24 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import nextI18NextConfig from "../next-i18next.config";
 import Layout from "@/components/Layout";
-import { properties as allProperties, localizeProperties, Property } from "@/data/properties";
+import { localizeProperties } from "@/data/properties";
 import { useFavorites } from "@/utils/useFavorites";
 import { formatPrice } from "@/utils/formatPrice";
+import { useProperties } from "@/contexts/SiteDataContext";
+import { getBaseStaticProps } from "@/utils/pageData";
 
 const MAX_COMPARE = 3;
 
-interface FavoritesPageProps {
-  properties: Property[];
-}
-
-export default function FavoritesPage({ properties: allProps }: FavoritesPageProps) {
+export default function FavoritesPage() {
   const { t } = useTranslation("common");
   const router = useRouter();
+  const { locale } = router;
+  const properties = useProperties();
+  const allProps = useMemo(
+    () => localizeProperties(properties, locale),
+    [properties, locale]
+  );
   const { favorites, hydrated, toggle, clear } = useFavorites();
   const [selected, setSelected] = useState<string[]>([]);
 
@@ -205,14 +207,6 @@ export default function FavoritesPage({ properties: allProps }: FavoritesPagePro
   );
 }
 
-export const getStaticProps: GetStaticProps<FavoritesPageProps> = async ({ locale }) => {
-  // We pass all pre-rendered properties; filtering by favorites
-  // happens on the client because the list lives in localStorage.
-  return {
-    props: {
-      properties: localizeProperties(allProperties, locale),
-      ...(await serverSideTranslations(locale ?? "es", ["common"], nextI18NextConfig)),
-    },
-    revalidate: 60,
-  };
+export const getStaticProps: GetStaticProps = async ({ locale }) => {
+  return getBaseStaticProps(locale);
 };

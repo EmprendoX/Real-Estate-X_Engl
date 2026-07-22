@@ -1,9 +1,15 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import type { GetServerSideProps } from "next";
 import AdminLayout from "@/components/admin/AdminLayout";
-import { siteConfig } from "@/config/siteConfig";
+import { useSiteConfig } from "@/contexts/SiteDataContext";
+import { getAdminServerSideProps } from "@/utils/pageData";
 import { useDemoState } from "@/utils/useDemoState";
+
+export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
+  return getAdminServerSideProps(locale);
+};
 import {
   CONNECTORS,
   Connector,
@@ -36,6 +42,7 @@ function maskKey(key: string): string {
 }
 
 export default function IntegrationsPage() {
+  const siteConfig = useSiteConfig();
   const [tab, setTab] = useState<Tab>("connectors");
 
   return (
@@ -223,6 +230,7 @@ function ConnectorsTab() {
 /* ============================ API KEYS ============================ */
 
 function ApiKeysTab() {
+  const siteConfig = useSiteConfig();
   const [keys, setKeys, hydrated] = useDemoState<ApiKey[]>("demo.apikeys", DEFAULT_API_KEYS);
   const [revealed, setRevealed] = useState<string | null>(null); // id of the newly created key
   const [copied, setCopied] = useState<string | null>(null);

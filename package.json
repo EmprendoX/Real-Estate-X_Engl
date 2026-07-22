@@ -11,6 +11,7 @@
     "setup-broker": "tsx scripts/setup-broker.ts"
   },
   "dependencies": {
+    "@netlify/blobs": "^10.7.9",
     "@react-pdf/renderer": "^4.5.1",
     "cookie": "^0.6.0",
     "formidable": "^3.5.4",

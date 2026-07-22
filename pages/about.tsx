@@ -4,23 +4,19 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import type { GetStaticProps } from "next";
 import { useTranslation } from "next-i18next";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import nextI18NextConfig from "../next-i18next.config";
 import Layout from "@/components/Layout";
-import { siteConfig } from "@/config/siteConfig";
+import { useSiteConfig } from "@/contexts/SiteDataContext";
 import { getAboutContent, renderTemplate } from "@/data/aboutPage";
+import { getBaseStaticProps } from "@/utils/pageData";
 
 export const getStaticProps: GetStaticProps = async ({ locale }) => {
-  return {
-    props: {
-      ...(await serverSideTranslations(locale ?? "es", ["common"], nextI18NextConfig)),
-    },
-  };
+  return getBaseStaticProps(locale);
 };
 
 export default function AboutPage() {
   const { t } = useTranslation("common");
   const { locale } = useRouter();
+  const siteConfig = useSiteConfig();
   const aboutContent = getAboutContent(locale);
   const tplVars = { city: siteConfig.city, brokerName: siteConfig.brokerName };
   const whatsappMessage = encodeURIComponent(t("about.servicesMessage"));

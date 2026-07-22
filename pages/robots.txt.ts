@@ -1,11 +1,12 @@
 import { GetServerSideProps } from "next";
-import { siteConfig } from "@/config/siteConfig";
+import { getEffectiveSiteConfig } from "@/utils/storage";
 
 export default function Robots() {
   return null;
 }
 
 export const getServerSideProps: GetServerSideProps = async ({ res }) => {
+  const siteConfig = await getEffectiveSiteConfig();
   const baseUrl = siteConfig.siteUrl.replace(/\/$/, "");
   const body = `User-agent: *
 Allow: /

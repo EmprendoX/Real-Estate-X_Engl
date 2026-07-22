@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { Resend } from "resend";
-import { siteConfig } from "@/config/siteConfig";
-import { properties } from "@/data/properties";
+import type { SiteConfig } from "@/config/siteConfig";
+import { getEffectiveSiteConfig, getEffectiveProperties } from "@/utils/storage";
 import { formatPrice } from "@/utils/formatPrice";
 
 interface ContactRequestBody {
@@ -37,7 +37,7 @@ function escapeHtml(s: string): string {
     .replace(/'/g, "&#39;");
 }
 
-function buildLeadEmailHtml(data: LeadEmailData): string {
+function buildLeadEmailHtml(data: LeadEmailData, siteConfig: SiteConfig): string {
   const propertyBlock = data.propertyTitle
     ? `
       <tr>
@@ -120,7 +120,7 @@ function buildLeadEmailHtml(data: LeadEmailData): string {
 </html>`;
 }
 
-function buildLeadEmailText(data: LeadEmailData): string {
+function buildLeadEmailText(data: LeadEmailData, siteConfig: SiteConfig): string {
   const lines = [
     `Nuevo lead recibido en ${siteConfig.siteName}`,
     "",
@@ -152,6 +152,10 @@ export default async function handler(
   }
 
   try {
+    const [siteConfig, properties] = await Promise.all([
+      getEffectiveSiteConfig(),
+      getEffectiveProperties(),
+    ]);
     const { name, email, phone, message, propertyId }: ContactRequestBody =
       req.body;
 
@@ -210,8 +214,8 @@ export default async function handler(
           subject: property
             ? `Nuevo lead: ${property.title}`
             : `Nuevo lead de ${leadData.name}`,
-          html: buildLeadEmailHtml(leadData),
-          text: buildLeadEmailText(leadData),
+          html: buildLeadEmailHtml(leadData, siteConfig),
+          text: buildLeadEmailText(leadData, siteConfig),
         });
         if (result.error) {
           console.error("Error de Resend:", result.error);

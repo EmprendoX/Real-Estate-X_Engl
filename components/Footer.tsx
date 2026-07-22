@@ -1,10 +1,11 @@
 import React from "react";
 import Link from "next/link";
 import { useTranslation } from "next-i18next";
-import { siteConfig } from "@/config/siteConfig";
+import { useSiteConfig } from "@/contexts/SiteDataContext";
 
 export default function Footer() {
   const { t } = useTranslation("common");
+  const siteConfig = useSiteConfig();
   const currentYear = new Date().getFullYear();
   const whatsappMessage = encodeURIComponent(t("whatsapp.defaultMessage"));
   const whatsappUrl = `https://wa.me/${siteConfig.whatsapp}?text=${whatsappMessage}`;

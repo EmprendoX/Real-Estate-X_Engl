@@ -1,8 +1,8 @@
 import { GetServerSideProps } from "next";
-import { properties } from "@/data/properties";
-import { siteConfig } from "@/config/siteConfig";
+import type { Property } from "@/data/properties";
+import { getEffectiveSiteConfig, getEffectiveProperties } from "@/utils/storage";
 
-function generateSitemap(baseUrl: string): string {
+function generateSitemap(baseUrl: string, properties: Property[]): string {
   const today = new Date().toISOString().split("T")[0];
 
   const staticPaths = [
@@ -36,13 +36,16 @@ ${urls}
 }
 
 export default function Sitemap() {
-  // Rendered in getServerSideProps; the component is never mounted
   return null;
 }
 
 export const getServerSideProps: GetServerSideProps = async ({ res }) => {
+  const [siteConfig, properties] = await Promise.all([
+    getEffectiveSiteConfig(),
+    getEffectiveProperties(),
+  ]);
   const baseUrl = siteConfig.siteUrl.replace(/\/$/, "");
-  const sitemap = generateSitemap(baseUrl);
+  const sitemap = generateSitemap(baseUrl, properties);
 
   res.setHeader("Content-Type", "application/xml");
   res.setHeader("Cache-Control", "public, s-maxage=3600, stale-while-revalidate=86400");
