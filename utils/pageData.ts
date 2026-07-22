@@ -1,6 +1,10 @@
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import nextI18NextConfig from "../next-i18next.config";
-import { getEffectiveSiteConfig, getEffectiveProperties } from "@/utils/storage";
+import {
+  getEffectiveSiteConfig,
+  getEffectiveProperties,
+  getEffectiveAbout,
+} from "@/utils/storage";
 
 const DEFAULT_REVALIDATE_SECONDS = 30;
 
@@ -22,16 +26,23 @@ export async function getBaseStaticProps(
   locale: string | undefined,
   namespaces: string[] = ["common"]
 ) {
-  const [siteConfig, properties, translations] = await Promise.all([
-    getEffectiveSiteConfig(),
-    getEffectiveProperties(),
-    serverSideTranslations(locale ?? "es", namespaces, nextI18NextConfig),
-  ]);
+  const [siteConfig, properties, aboutEs, aboutEn, translations] =
+    await Promise.all([
+      getEffectiveSiteConfig(),
+      getEffectiveProperties(),
+      getEffectiveAbout("es"),
+      getEffectiveAbout("en"),
+      serverSideTranslations(locale ?? "es", namespaces, nextI18NextConfig),
+    ]);
 
   return {
     props: {
       ...translations,
-      __siteData: jsonSafe({ siteConfig, properties }),
+      __siteData: jsonSafe({
+        siteConfig,
+        properties,
+        about: { es: aboutEs, en: aboutEn },
+      }),
     },
     revalidate: DEFAULT_REVALIDATE_SECONDS,
   };
@@ -45,16 +56,23 @@ export async function getAdminServerSideProps(
   locale: string | undefined,
   namespaces: string[] = ["common"]
 ) {
-  const [siteConfig, properties, translations] = await Promise.all([
-    getEffectiveSiteConfig(),
-    getEffectiveProperties(),
-    serverSideTranslations(locale ?? "es", namespaces, nextI18NextConfig),
-  ]);
+  const [siteConfig, properties, aboutEs, aboutEn, translations] =
+    await Promise.all([
+      getEffectiveSiteConfig(),
+      getEffectiveProperties(),
+      getEffectiveAbout("es"),
+      getEffectiveAbout("en"),
+      serverSideTranslations(locale ?? "es", namespaces, nextI18NextConfig),
+    ]);
 
   return {
     props: {
       ...translations,
-      __siteData: jsonSafe({ siteConfig, properties }),
+      __siteData: jsonSafe({
+        siteConfig,
+        properties,
+        about: { es: aboutEs, en: aboutEn },
+      }),
     },
   };
 }

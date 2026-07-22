@@ -93,6 +93,16 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                   Settings
                 </Link>
                 <Link
+                  href="/admin/about"
+                  className={`px-3 py-2 rounded-md text-sm font-medium ${
+                    router.pathname === "/admin/about"
+                      ? "bg-primary text-white"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  About
+                </Link>
+                <Link
                   href="/admin/properties"
                   className={`px-3 py-2 rounded-md text-sm font-medium ${
                     router.pathname.startsWith("/admin/properties")

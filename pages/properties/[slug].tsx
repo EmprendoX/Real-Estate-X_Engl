@@ -14,7 +14,11 @@ import ContactForm from "@/components/ContactForm";
 import ShareButton from "@/components/ShareButton";
 import { localizeProperty, Property } from "@/data/properties";
 import { useSiteConfig } from "@/contexts/SiteDataContext";
-import { getEffectiveProperties, getEffectiveSiteConfig } from "@/utils/storage";
+import {
+  getEffectiveProperties,
+  getEffectiveSiteConfig,
+  getEffectiveAbout,
+} from "@/utils/storage";
 import { jsonSafe } from "@/utils/pageData";
 
 interface PropertyDetailPageProps {
@@ -267,10 +271,13 @@ export const getStaticProps: GetStaticProps<PropertyDetailPageProps> = async ({
     return { notFound: true };
   }
 
-  const [effectiveSite, effectiveProperties] = await Promise.all([
-    getEffectiveSiteConfig(),
-    getEffectiveProperties(),
-  ]);
+  const [effectiveSite, effectiveProperties, aboutEs, aboutEn] =
+    await Promise.all([
+      getEffectiveSiteConfig(),
+      getEffectiveProperties(),
+      getEffectiveAbout("es"),
+      getEffectiveAbout("en"),
+    ]);
 
   const property = effectiveProperties.find((p) => p.slug === slug);
   if (!property) {
@@ -280,7 +287,11 @@ export const getStaticProps: GetStaticProps<PropertyDetailPageProps> = async ({
   return {
     props: {
       property: jsonSafe(localizeProperty(property, locale)),
-      __siteData: jsonSafe({ siteConfig: effectiveSite, properties: effectiveProperties }),
+      __siteData: jsonSafe({
+        siteConfig: effectiveSite,
+        properties: effectiveProperties,
+        about: { es: aboutEs, en: aboutEn },
+      }),
       ...(await serverSideTranslations(locale ?? "es", ["common"], nextI18NextConfig)),
     },
     revalidate: 30,

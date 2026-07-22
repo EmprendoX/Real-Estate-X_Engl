@@ -1,24 +1,31 @@
 import React, { createContext, useContext } from "react";
 import { siteConfig as defaultSiteConfig, SiteConfig } from "@/config/siteConfig";
 import { properties as defaultProperties, Property } from "@/data/properties";
+import {
+  aboutContent as defaultAboutEs,
+  aboutContentEn as defaultAboutEn,
+  AboutContent,
+} from "@/data/aboutPage";
 
 /**
- * Injects the effective site config and properties (Netlify Blobs override
- * merged over the file-baked defaults) into every page and component, so no
- * caller has to know or care about where the data lives.
+ * Injects the effective site config, properties and About content (Netlify
+ * Blobs overrides merged over the file-baked defaults) into every page and
+ * component, so no caller has to know or care about where the data lives.
  *
- * Populated by `_app.tsx#getInitialProps`; always has a value, so
- * `useSiteConfig()` / `useProperties()` are safe to call unconditionally.
+ * Populated by each page's getStaticProps / getServerSideProps; always has a
+ * value, so hook consumers are safe to call unconditionally.
  */
 
 interface SiteData {
   siteConfig: SiteConfig;
   properties: Property[];
+  about: { es: AboutContent; en: AboutContent };
 }
 
 const SiteDataContext = createContext<SiteData>({
   siteConfig: defaultSiteConfig,
   properties: defaultProperties,
+  about: { es: defaultAboutEs, en: defaultAboutEn },
 });
 
 export function SiteDataProvider({
@@ -41,4 +48,10 @@ export function useSiteConfig(): SiteConfig {
 
 export function useProperties(): Property[] {
   return useContext(SiteDataContext).properties;
+}
+
+/** Returns the About content for the given locale ("es" or "en"). */
+export function useAbout(locale?: string): AboutContent {
+  const about = useContext(SiteDataContext).about;
+  return locale === "en" ? about.en : about.es;
 }

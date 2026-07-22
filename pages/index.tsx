@@ -6,10 +6,10 @@ import { useTranslation } from "next-i18next";
 import Layout from "@/components/Layout";
 import PropertyGrid from "@/components/PropertyGrid";
 import TestimonialsSection from "@/components/TestimonialsSection";
-import { useSiteConfig, useProperties } from "@/contexts/SiteDataContext";
+import { useSiteConfig, useProperties, useAbout } from "@/contexts/SiteDataContext";
 import { localizeProperties, PropertyType } from "@/data/properties";
 import { getTestimonials } from "@/data/testimonials";
-import { getAboutContent, renderTemplate } from "@/data/aboutPage";
+import { renderTemplate } from "@/data/aboutPage";
 import type { GetStaticProps } from "next";
 import { getBaseStaticProps } from "@/utils/pageData";
 
@@ -44,7 +44,7 @@ export default function Home() {
     () => getTestimonials(undefined, locale),
     [locale]
   );
-  const aboutContent = getAboutContent(locale);
+  const aboutContent = useAbout(locale);
   const tplVars = { city: siteConfig.city, brokerName: siteConfig.brokerName };
   const whatsappMessage = encodeURIComponent(t("whatsapp.defaultMessage"));
   const whatsappUrl = `https://wa.me/${siteConfig.whatsapp}?text=${whatsappMessage}`;

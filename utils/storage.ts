@@ -18,11 +18,20 @@ import path from "path";
 import { getStore } from "@netlify/blobs";
 import { siteConfig as defaultSiteConfig, SiteConfig } from "@/config/siteConfig";
 import { properties as defaultProperties, Property } from "@/data/properties";
+import {
+  aboutContent as defaultAboutEs,
+  aboutContentEn as defaultAboutEn,
+  AboutContent,
+} from "@/data/aboutPage";
 import { writeSiteConfig, writeProperties } from "@/utils/fileWriter";
 
 const SITE_KEY = "site-config.json";
 const PROPERTIES_KEY = "properties.json";
 const IMAGES_PREFIX = "images/";
+const ABOUT_KEY_ES = "about-es.json";
+const ABOUT_KEY_EN = "about-en.json";
+const ABOUT_LOCAL_ES = path.join(process.cwd(), "config", "about-es.local.json");
+const ABOUT_LOCAL_EN = path.join(process.cwd(), "config", "about-en.local.json");
 
 // Netlify sets `NETLIFY=true` at BUILD time, but does not reliably expose it
 // to Next.js SSR/API Lambda functions at runtime. Detect the deployed runtime
@@ -64,6 +73,61 @@ export async function saveSiteConfig(config: SiteConfig): Promise<void> {
     return;
   }
   await siteStore().set(SITE_KEY, JSON.stringify(config));
+}
+
+// ---------------- About content (per-locale) ----------------
+
+function aboutDefault(locale: "es" | "en"): AboutContent {
+  return locale === "en" ? defaultAboutEn : defaultAboutEs;
+}
+function aboutBlobKey(locale: "es" | "en"): string {
+  return locale === "en" ? ABOUT_KEY_EN : ABOUT_KEY_ES;
+}
+function aboutLocalPath(locale: "es" | "en"): string {
+  return locale === "en" ? ABOUT_LOCAL_EN : ABOUT_LOCAL_ES;
+}
+
+export async function getEffectiveAbout(
+  locale: "es" | "en"
+): Promise<AboutContent> {
+  const fallback = aboutDefault(locale);
+  if (!isNetlify) {
+    // Local dev: read a JSON override file if present, otherwise the .ts default.
+    try {
+      const p = aboutLocalPath(locale);
+      if (fs.existsSync(p)) {
+        const raw = fs.readFileSync(p, "utf-8");
+        const override = JSON.parse(raw) as Partial<AboutContent>;
+        return { ...fallback, ...override };
+      }
+    } catch (err) {
+      console.error("[storage] getEffectiveAbout local read failed:", err);
+    }
+    return fallback;
+  }
+  try {
+    const raw = await siteStore().get(aboutBlobKey(locale), { type: "text" });
+    if (!raw) return fallback;
+    const override = JSON.parse(raw) as Partial<AboutContent>;
+    return { ...fallback, ...override };
+  } catch (err) {
+    console.error("[storage] getEffectiveAbout fell back to default:", err);
+    return fallback;
+  }
+}
+
+export async function saveAbout(
+  locale: "es" | "en",
+  content: AboutContent
+): Promise<void> {
+  if (!isNetlify) {
+    const p = aboutLocalPath(locale);
+    const dir = path.dirname(p);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(p, JSON.stringify(content, null, 2), "utf-8");
+    return;
+  }
+  await siteStore().set(aboutBlobKey(locale), JSON.stringify(content));
 }
 
 // ---------------- Properties ----------------

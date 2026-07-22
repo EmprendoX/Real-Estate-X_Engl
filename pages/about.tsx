@@ -5,8 +5,8 @@ import { useRouter } from "next/router";
 import type { GetStaticProps } from "next";
 import { useTranslation } from "next-i18next";
 import Layout from "@/components/Layout";
-import { useSiteConfig } from "@/contexts/SiteDataContext";
-import { getAboutContent, renderTemplate } from "@/data/aboutPage";
+import { useSiteConfig, useAbout } from "@/contexts/SiteDataContext";
+import { renderTemplate } from "@/data/aboutPage";
 import { getBaseStaticProps } from "@/utils/pageData";
 
 export const getStaticProps: GetStaticProps = async ({ locale }) => {
@@ -17,7 +17,7 @@ export default function AboutPage() {
   const { t } = useTranslation("common");
   const { locale } = useRouter();
   const siteConfig = useSiteConfig();
-  const aboutContent = getAboutContent(locale);
+  const aboutContent = useAbout(locale);
   const tplVars = { city: siteConfig.city, brokerName: siteConfig.brokerName };
   const whatsappMessage = encodeURIComponent(t("about.servicesMessage"));
   const whatsappUrl = `https://wa.me/${siteConfig.whatsapp}?text=${whatsappMessage}`;
@@ -137,6 +137,52 @@ export default function AboutPage() {
               ))}
             </div>
           </div>
+
+          {/* Team */}
+          {aboutContent.team && aboutContent.team.members.length > 0 && (
+            <div className="bg-white rounded-lg shadow-md p-8 mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                {renderTemplate(aboutContent.team.heading, tplVars)}
+              </h2>
+              {aboutContent.team.intro && (
+                <p className="text-gray-600 mb-6">
+                  {renderTemplate(aboutContent.team.intro, tplVars)}
+                </p>
+              )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {aboutContent.team.members.map((member) => (
+                  <div
+                    key={member.id}
+                    className="bg-gray-50 rounded-lg overflow-hidden flex flex-col"
+                  >
+                    {member.photoUrl && (
+                      <div className="relative w-full h-56 bg-gray-100">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={member.photoUrl}
+                          alt={member.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                    <div className="p-4 flex-1">
+                      <h3 className="font-semibold text-gray-900 leading-tight">
+                        {member.name}
+                      </h3>
+                      <p className="text-sm text-primary font-medium mt-0.5">
+                        {member.role}
+                      </p>
+                      {member.bio && (
+                        <p className="text-sm text-gray-600 mt-2 leading-relaxed">
+                          {member.bio}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* CTA */}
           <div className="bg-primary text-white rounded-lg shadow-md p-8 text-center">

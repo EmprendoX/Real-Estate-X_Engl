@@ -11,6 +11,17 @@
  * Estas variables se reemplazan automáticamente al renderizar.
  */
 
+export interface TeamMember {
+  /** Stable id (uuid or slug). Used as React key and for admin reorder. */
+  id: string;
+  name: string;
+  role: string;
+  /** Image URL — absolute or relative (/api/media/… on Netlify). */
+  photoUrl: string;
+  /** Optional 1-2 sentence bio. */
+  bio?: string;
+}
+
 export interface AboutContent {
   /** URL de la foto del broker. Puede ser /images/foto.jpg o URL absoluta. */
   brokerPhoto: string;
@@ -37,6 +48,13 @@ export interface AboutContent {
   whyMe: {
     heading: string;
     items: { title: string; description: string }[];
+  };
+  /** Sección "Nuestro equipo" en /about. Vacía por defecto — la agencia
+   *  puebla los miembros desde el admin. */
+  team?: {
+    heading: string;
+    intro?: string;
+    members: TeamMember[];
   };
 }
 
@@ -112,6 +130,13 @@ export const aboutContent: AboutContent = {
           "Tiempos de venta por debajo del promedio de mercado y precios de cierre alineados a valuaciones profesionales.",
       },
     ],
+  },
+
+  team: {
+    heading: "Nuestro equipo",
+    intro:
+      "Asesores senior y especialistas que hacen posible cada operación.",
+    members: [],
   },
 };
 
@@ -191,6 +216,12 @@ export const aboutContentEn: AboutContent = {
           "Sale timelines below market average and closing prices aligned with professional appraisals.",
       },
     ],
+  },
+
+  team: {
+    heading: "Our team",
+    intro: "Senior advisors and specialists behind every transaction.",
+    members: [],
   },
 };
 
