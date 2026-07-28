@@ -1,7 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { requireAuth } from "@/utils/adminAuth";
-import { guardReadOnly } from "@/utils/adminReadOnly";
-import { getEffectiveProperties, saveProperties } from "@/utils/storage";
+import { requireBroker } from "@/utils/adminAuth";
+import { createPagesSupabaseClient } from "@/lib/supabase/pagesAuth";
+import { getEffectiveProperties } from "@/utils/storage";
+import { savePropertiesToSupabase, triggerBuildAfterSave } from "@/lib/supabase/writeSitio";
 import { Property, MAX_PROPERTIES } from "@/data/properties";
 
 interface PropertiesResponse {
@@ -10,76 +11,46 @@ interface PropertiesResponse {
   properties?: Property[];
   property?: Property;
   count?: number;
+  rebuild?: boolean;
 }
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<PropertiesResponse>
+  res: NextApiResponse<PropertiesResponse>,
 ) {
-  // Check authentication
-  if (!requireAuth(req, res)) {
-    return;
-  }
-  if (guardReadOnly(req, res)) return;
+  const session = await requireBroker(req, res);
+  if (!session) return;
 
   const properties = await getEffectiveProperties();
 
-  // GET - List all properties
   if (req.method === "GET") {
-    return res.status(200).json({
-      ok: true,
-      properties,
-      count: properties.length,
-    });
+    return res.status(200).json({ ok: true, properties, count: properties.length });
   }
 
-  // POST - Create new property
   if (req.method === "POST") {
     try {
       if (properties.length >= MAX_PROPERTIES) {
         return res.status(400).json({
           ok: false,
-          message: `You cannot add more than ${MAX_PROPERTIES} properties. You currently have ${properties.length}.`,
+          message: `No podés agregar más de ${MAX_PROPERTIES} propiedades. Actualmente tenés ${properties.length}.`,
         });
       }
-
       const newProperty: Property = req.body;
-
       if (!newProperty.title || !newProperty.slug || !newProperty.description) {
-        return res.status(400).json({
-          ok: false,
-          message: "Missing required fields (title, slug, description)",
-        });
+        return res.status(400).json({ ok: false, message: "Faltan campos (título, slug, descripción)" });
       }
-
       if (properties.some((p) => p.slug === newProperty.slug)) {
-        return res.status(400).json({
-          ok: false,
-          message: "A property with that slug already exists",
-        });
+        return res.status(400).json({ ok: false, message: "Ya existe una propiedad con ese slug" });
       }
-
       if (properties.some((p) => p.id === newProperty.id)) {
-        return res.status(400).json({
-          ok: false,
-          message: "A property with that ID already exists",
-        });
+        return res.status(400).json({ ok: false, message: "Ya existe una propiedad con ese ID" });
       }
-
       if (!["venta", "renta"].includes(newProperty.type)) {
-        return res.status(400).json({
-          ok: false,
-          message: "Type must be 'venta' or 'renta'",
-        });
+        return res.status(400).json({ ok: false, message: "Tipo debe ser 'venta' o 'renta'" });
       }
-
       if (!["MXN", "USD"].includes(newProperty.currency)) {
-        return res.status(400).json({
-          ok: false,
-          message: "Currency must be 'MXN' or 'USD'",
-        });
+        return res.status(400).json({ ok: false, message: "Currency debe ser MXN o USD" });
       }
-
       if (
         typeof newProperty.price !== "number" ||
         typeof newProperty.bedrooms !== "number" ||
@@ -87,32 +58,31 @@ export default async function handler(
         typeof newProperty.parking !== "number" ||
         typeof newProperty.area !== "number"
       ) {
-        return res.status(400).json({
-          ok: false,
-          message: "Numeric fields must be valid numbers",
-        });
+        return res.status(400).json({ ok: false, message: "Los campos numéricos deben ser válidos" });
       }
 
       const updatedProperties = [...properties, newProperty];
-      await saveProperties(updatedProperties);
+      const supabase = createPagesSupabaseClient(req, res);
+      const { buildHookUrl } = await savePropertiesToSupabase(supabase, session.clienteId, updatedProperties);
+      const { triggered } = await triggerBuildAfterSave(buildHookUrl);
 
       return res.status(200).json({
         ok: true,
-        message: "Property created successfully",
+        message: triggered
+          ? "Creada. Online en 2-3 minutos."
+          : "Creada. Contactá al equipo RealEX para publicar (falta build hook).",
         property: newProperty,
         count: updatedProperties.length,
+        rebuild: triggered,
       });
-    } catch (error) {
-      console.error("Error creating property:", error);
+    } catch (err) {
+      console.error("Error creating property:", err);
       return res.status(500).json({
         ok: false,
-        message: "Error creating the property",
+        message: err instanceof Error ? err.message : "Error al crear",
       });
     }
   }
 
-  return res.status(405).json({
-    ok: false,
-    message: "Method not allowed",
-  });
+  return res.status(405).json({ ok: false, message: "Method not allowed" });
 }

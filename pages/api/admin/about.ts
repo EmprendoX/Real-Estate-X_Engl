@@ -1,13 +1,15 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { requireAuth } from "@/utils/adminAuth";
-import { guardReadOnly } from "@/utils/adminReadOnly";
-import { getEffectiveAbout, saveAbout } from "@/utils/storage";
+import { requireBroker } from "@/utils/adminAuth";
+import { createPagesSupabaseClient } from "@/lib/supabase/pagesAuth";
+import { getEffectiveAbout } from "@/utils/storage";
+import { saveAboutToSupabase, triggerBuildAfterSave } from "@/lib/supabase/writeSitio";
 import type { AboutContent } from "@/data/aboutPage";
 
 interface AboutResponse {
   ok: boolean;
   message?: string;
   content?: AboutContent;
+  rebuild?: boolean;
 }
 
 function normalizeLocale(v: unknown): "es" | "en" | null {
@@ -16,17 +18,14 @@ function normalizeLocale(v: unknown): "es" | "en" | null {
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<AboutResponse>
+  res: NextApiResponse<AboutResponse>,
 ) {
-  if (!requireAuth(req, res)) return;
-  if (guardReadOnly(req, res)) return;
+  const session = await requireBroker(req, res);
+  if (!session) return;
 
   const locale = normalizeLocale(req.query.locale);
   if (!locale) {
-    return res.status(400).json({
-      ok: false,
-      message: "Missing or invalid ?locale=es|en",
-    });
+    return res.status(400).json({ ok: false, message: "Missing or invalid ?locale=es|en" });
   }
 
   if (req.method === "GET") {
@@ -40,7 +39,6 @@ export default async function handler(
       if (!body || typeof body !== "object") {
         return res.status(400).json({ ok: false, message: "Invalid body" });
       }
-      // Minimal shape validation — the admin form guarantees the rest.
       if (
         !body.bio ||
         !body.howIWork ||
@@ -51,19 +49,23 @@ export default async function handler(
       ) {
         return res.status(400).json({ ok: false, message: "Malformed About content" });
       }
-      await saveAbout(locale, body);
+
+      const supabase = createPagesSupabaseClient(req, res);
+      const { buildHookUrl } = await saveAboutToSupabase(supabase, session.clienteId, locale, body);
+      const { triggered } = await triggerBuildAfterSave(buildHookUrl);
+
       return res.status(200).json({
         ok: true,
-        message: "About content saved successfully",
+        message: triggered
+          ? "Guardado. Los cambios estarán online en 2-3 minutos."
+          : "Guardado. Contactá al equipo RealEX para publicar (falta build hook).",
         content: body,
+        rebuild: triggered,
       });
     } catch (err) {
       console.error("Error saving About:", err);
       const detail = err instanceof Error ? err.message : String(err);
-      return res.status(500).json({
-        ok: false,
-        message: `Error saving About: ${detail}`,
-      });
+      return res.status(500).json({ ok: false, message: `Error: ${detail}` });
     }
   }
 
