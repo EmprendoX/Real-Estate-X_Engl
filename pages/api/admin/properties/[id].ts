@@ -1,9 +1,22 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { requireBroker } from "@/utils/adminAuth";
 import { createPagesSupabaseClient } from "@/lib/supabase/pagesAuth";
-import { getEffectiveProperties } from "@/utils/storage";
 import { savePropertiesToSupabase, triggerBuildAfterSave } from "@/lib/supabase/writeSitio";
 import { Property } from "@/data/properties";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+async function readPropertiesFresh(
+  supabase: SupabaseClient,
+  clienteId: string,
+): Promise<Property[]> {
+  const { data } = await supabase
+    .from("sitios")
+    .select("config")
+    .eq("cliente_id", clienteId)
+    .maybeSingle();
+  const cfg = (data?.config ?? {}) as { properties?: Property[] };
+  return Array.isArray(cfg.properties) ? cfg.properties : [];
+}
 
 interface PropertyResponse {
   ok: boolean;
@@ -25,7 +38,8 @@ export default async function handler(
     return res.status(400).json({ ok: false, message: "Property ID required" });
   }
 
-  const properties = await getEffectiveProperties();
+  const supabase = createPagesSupabaseClient(req, res);
+  const properties = await readPropertiesFresh(supabase, session.clienteId);
 
   if (req.method === "PUT") {
     try {
@@ -56,7 +70,6 @@ export default async function handler(
       const updatedProperties = [...properties];
       updatedProperties[propertyIndex] = updatedProperty;
 
-      const supabase = createPagesSupabaseClient(req, res);
       const { buildHookUrl } = await savePropertiesToSupabase(supabase, session.clienteId, updatedProperties);
       const { triggered } = await triggerBuildAfterSave(buildHookUrl);
 
@@ -81,7 +94,6 @@ export default async function handler(
       }
       const updatedProperties = properties.filter((p) => p.id !== id);
 
-      const supabase = createPagesSupabaseClient(req, res);
       const { buildHookUrl } = await savePropertiesToSupabase(supabase, session.clienteId, updatedProperties);
       const { triggered } = await triggerBuildAfterSave(buildHookUrl);
 

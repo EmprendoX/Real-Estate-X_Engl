@@ -1,9 +1,27 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { requireBroker } from "@/utils/adminAuth";
 import { createPagesSupabaseClient } from "@/lib/supabase/pagesAuth";
-import { getEffectiveProperties } from "@/utils/storage";
 import { savePropertiesToSupabase, triggerBuildAfterSave } from "@/lib/supabase/writeSitio";
 import { Property, MAX_PROPERTIES } from "@/data/properties";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+/**
+ * Read the CURRENT properties list from Supabase for this broker's sitio,
+ * bypassing the module-level cache in getEffectiveProperties (which is for
+ * build-time reads and stays stale across sequential admin mutations).
+ */
+async function readPropertiesFresh(
+  supabase: SupabaseClient,
+  clienteId: string,
+): Promise<Property[]> {
+  const { data } = await supabase
+    .from("sitios")
+    .select("config")
+    .eq("cliente_id", clienteId)
+    .maybeSingle();
+  const cfg = (data?.config ?? {}) as { properties?: Property[] };
+  return Array.isArray(cfg.properties) ? cfg.properties : [];
+}
 
 interface PropertiesResponse {
   ok: boolean;
@@ -21,7 +39,8 @@ export default async function handler(
   const session = await requireBroker(req, res);
   if (!session) return;
 
-  const properties = await getEffectiveProperties();
+  const supabase = createPagesSupabaseClient(req, res);
+  const properties = await readPropertiesFresh(supabase, session.clienteId);
 
   if (req.method === "GET") {
     return res.status(200).json({ ok: true, properties, count: properties.length });
@@ -62,7 +81,6 @@ export default async function handler(
       }
 
       const updatedProperties = [...properties, newProperty];
-      const supabase = createPagesSupabaseClient(req, res);
       const { buildHookUrl } = await savePropertiesToSupabase(supabase, session.clienteId, updatedProperties);
       const { triggered } = await triggerBuildAfterSave(buildHookUrl);
 
