@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { requireAuth } from "@/utils/adminAuth";
+import { guardReadOnly } from "@/utils/adminReadOnly";
 import { saveImage } from "@/utils/storage";
 import formidable from "formidable";
 import fs from "fs";
@@ -26,6 +27,7 @@ export default async function handler(
   if (!requireAuth(req, res)) {
     return;
   }
+  if (guardReadOnly(req, res)) return;
 
   if (req.method !== "POST") {
     return res.status(405).json({

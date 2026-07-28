@@ -12,6 +12,7 @@ interface AdminLayoutProps {
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const router = useRouter();
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
+  const [readOnly, setReadOnly] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -20,6 +21,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       .then((res) => res.json())
       .then((data) => {
         setAuthenticated(data.authenticated);
+        setReadOnly(!!data.readOnly);
         setLoading(false);
         if (!data.authenticated && router.pathname !== "/admin/login") {
           router.push("/admin/login");
@@ -63,6 +65,16 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         <meta name="robots" content="noindex,nofollow" />
         <title>Admin</title>
       </Head>
+      {readOnly && (
+        <div className="bg-amber-100 border-b border-amber-300 text-amber-900 text-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between">
+            <span>
+              <strong>Modo solo lectura.</strong> Este sitio se administra desde el
+              dashboard RealEX — cualquier edición aquí será rechazada.
+            </span>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

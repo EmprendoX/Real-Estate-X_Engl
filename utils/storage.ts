@@ -24,6 +24,7 @@ import {
   AboutContent,
 } from "@/data/aboutPage";
 import { writeSiteConfig, writeProperties } from "@/utils/fileWriter";
+import { getTemplateConfig, isSupabaseMode } from "@/lib/supabase/configClient";
 
 const SITE_KEY = "site-config.json";
 const PROPERTIES_KEY = "properties.json";
@@ -55,6 +56,12 @@ function imagesStore() {
 // ---------------- Site config ----------------
 
 export async function getEffectiveSiteConfig(): Promise<SiteConfig> {
+  if (isSupabaseMode()) {
+    const cfg = await getTemplateConfig();
+    // Merge over defaults so a config missing an optional field keeps the seed.
+    if (cfg?.branding) return { ...defaultSiteConfig, ...cfg.branding };
+    // Fall through to Blobs/defaults on fetch failure so the site never breaks.
+  }
   if (!isNetlify) return defaultSiteConfig;
   try {
     const raw = await siteStore().get(SITE_KEY, { type: "text" });
@@ -91,6 +98,12 @@ export async function getEffectiveAbout(
   locale: "es" | "en"
 ): Promise<AboutContent> {
   const fallback = aboutDefault(locale);
+  if (isSupabaseMode()) {
+    const cfg = await getTemplateConfig();
+    const supaAbout = cfg?.about?.[locale];
+    if (supaAbout) return { ...fallback, ...supaAbout };
+    // Fall through on fetch failure.
+  }
   if (!isNetlify) {
     // Local dev: read a JSON override file if present, otherwise the .ts default.
     try {
@@ -133,6 +146,11 @@ export async function saveAbout(
 // ---------------- Properties ----------------
 
 export async function getEffectiveProperties(): Promise<Property[]> {
+  if (isSupabaseMode()) {
+    const cfg = await getTemplateConfig();
+    if (cfg?.properties) return cfg.properties;
+    // Fall through on fetch failure.
+  }
   if (!isNetlify) return defaultProperties;
   try {
     const raw = await siteStore().get(PROPERTIES_KEY, { type: "text" });
