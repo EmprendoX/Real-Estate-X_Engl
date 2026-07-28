@@ -1,7 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { requireAuth } from "@/utils/adminAuth";
-import { guardReadOnly } from "@/utils/adminReadOnly";
-import { getEffectiveProperties, saveProperties } from "@/utils/storage";
+import { requireBroker } from "@/utils/adminAuth";
+import { createPagesSupabaseClient } from "@/lib/supabase/pagesAuth";
+import { getEffectiveProperties } from "@/utils/storage";
+import { savePropertiesToSupabase, triggerBuildAfterSave } from "@/lib/supabase/writeSitio";
 import { Property } from "@/data/properties";
 
 interface PropertyResponse {
@@ -9,129 +10,92 @@ interface PropertyResponse {
   message?: string;
   property?: Property;
   count?: number;
+  rebuild?: boolean;
 }
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<PropertyResponse>
+  res: NextApiResponse<PropertyResponse>,
 ) {
-  // Check authentication
-  if (!requireAuth(req, res)) {
-    return;
-  }
-  if (guardReadOnly(req, res)) return;
+  const session = await requireBroker(req, res);
+  if (!session) return;
 
   const { id } = req.query;
-
   if (!id || typeof id !== "string") {
-    return res.status(400).json({
-      ok: false,
-      message: "Property ID required",
-    });
+    return res.status(400).json({ ok: false, message: "Property ID required" });
   }
 
   const properties = await getEffectiveProperties();
 
-  // PUT - Update property
   if (req.method === "PUT") {
     try {
       const updatedProperty: Property = req.body;
-
       if (updatedProperty.id !== id) {
-        return res.status(400).json({
-          ok: false,
-          message: "The property ID does not match",
-        });
+        return res.status(400).json({ ok: false, message: "El ID de la propiedad no coincide" });
       }
-
       const propertyIndex = properties.findIndex((p) => p.id === id);
       if (propertyIndex === -1) {
-        return res.status(404).json({
-          ok: false,
-          message: "Property not found",
-        });
+        return res.status(404).json({ ok: false, message: "Propiedad no encontrada" });
       }
-
       if (
         updatedProperty.slug !== properties[propertyIndex].slug &&
         properties.some((p) => p.slug === updatedProperty.slug && p.id !== id)
       ) {
-        return res.status(400).json({
-          ok: false,
-          message: "Another property with that slug already exists",
-        });
+        return res.status(400).json({ ok: false, message: "Otra propiedad tiene ese slug" });
       }
-
       if (!updatedProperty.title || !updatedProperty.slug || !updatedProperty.description) {
-        return res.status(400).json({
-          ok: false,
-          message: "Missing required fields",
-        });
+        return res.status(400).json({ ok: false, message: "Faltan campos requeridos" });
       }
-
       if (!["venta", "renta"].includes(updatedProperty.type)) {
-        return res.status(400).json({
-          ok: false,
-          message: "Type must be 'venta' or 'renta'",
-        });
+        return res.status(400).json({ ok: false, message: "Tipo inválido" });
       }
-
       if (!["MXN", "USD"].includes(updatedProperty.currency)) {
-        return res.status(400).json({
-          ok: false,
-          message: "Currency must be 'MXN' or 'USD'",
-        });
+        return res.status(400).json({ ok: false, message: "Currency inválido" });
       }
 
       const updatedProperties = [...properties];
       updatedProperties[propertyIndex] = updatedProperty;
-      await saveProperties(updatedProperties);
+
+      const supabase = createPagesSupabaseClient(req, res);
+      const { buildHookUrl } = await savePropertiesToSupabase(supabase, session.clienteId, updatedProperties);
+      const { triggered } = await triggerBuildAfterSave(buildHookUrl);
 
       return res.status(200).json({
         ok: true,
-        message: "Property updated successfully",
+        message: triggered ? "Actualizada. Online en 2-3 minutos." : "Actualizada.",
         property: updatedProperty,
         count: updatedProperties.length,
+        rebuild: triggered,
       });
-    } catch (error) {
-      console.error("Error updating property:", error);
-      return res.status(500).json({
-        ok: false,
-        message: "Error updating the property",
-      });
+    } catch (err) {
+      console.error("Error updating property:", err);
+      return res.status(500).json({ ok: false, message: err instanceof Error ? err.message : "Error" });
     }
   }
 
-  // DELETE - Delete property
   if (req.method === "DELETE") {
     try {
       const propertyIndex = properties.findIndex((p) => p.id === id);
       if (propertyIndex === -1) {
-        return res.status(404).json({
-          ok: false,
-          message: "Property not found",
-        });
+        return res.status(404).json({ ok: false, message: "Propiedad no encontrada" });
       }
-
       const updatedProperties = properties.filter((p) => p.id !== id);
-      await saveProperties(updatedProperties);
+
+      const supabase = createPagesSupabaseClient(req, res);
+      const { buildHookUrl } = await savePropertiesToSupabase(supabase, session.clienteId, updatedProperties);
+      const { triggered } = await triggerBuildAfterSave(buildHookUrl);
 
       return res.status(200).json({
         ok: true,
-        message: "Property deleted successfully",
+        message: triggered ? "Eliminada. Online en 2-3 minutos." : "Eliminada.",
         count: updatedProperties.length,
+        rebuild: triggered,
       });
-    } catch (error) {
-      console.error("Error deleting property:", error);
-      return res.status(500).json({
-        ok: false,
-        message: "Error deleting the property",
-      });
+    } catch (err) {
+      console.error("Error deleting property:", err);
+      return res.status(500).json({ ok: false, message: err instanceof Error ? err.message : "Error" });
     }
   }
 
-  return res.status(405).json({
-    ok: false,
-    message: "Method not allowed",
-  });
+  return res.status(405).json({ ok: false, message: "Method not allowed" });
 }

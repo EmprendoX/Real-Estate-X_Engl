@@ -1,35 +1,18 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { clearAuthCookie } from "@/utils/adminAuth";
+import { createPagesSupabaseClient } from "@/lib/supabase/pagesAuth";
 
-interface LogoutResponse {
-  ok: boolean;
-  message: string;
-}
-
-export default function handler(
+export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<LogoutResponse>
+  res: NextApiResponse<{ ok: boolean }>,
 ) {
   if (req.method !== "POST") {
-    return res.status(405).json({
-      ok: false,
-      message: "Method not allowed",
-    });
+    return res.status(405).json({ ok: false });
   }
-
   try {
-    clearAuthCookie(res);
-    return res.status(200).json({
-      ok: true,
-      message: "Session closed",
-    });
-  } catch (error) {
-    console.error("Logout error:", error);
-    return res.status(500).json({
-      ok: false,
-      message: "Internal server error",
-    });
+    const supabase = createPagesSupabaseClient(req, res);
+    await supabase.auth.signOut();
+  } catch (err) {
+    console.error("[logout] error:", err);
   }
+  return res.status(200).json({ ok: true });
 }
-
-

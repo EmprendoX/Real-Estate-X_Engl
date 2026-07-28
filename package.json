@@ -13,6 +13,8 @@
   "dependencies": {
     "@netlify/blobs": "^10.7.9",
     "@react-pdf/renderer": "^4.5.1",
+    "@supabase/ssr": "^0.5.2",
+    "@supabase/supabase-js": "^2.47.10",
     "cookie": "^0.6.0",
     "formidable": "^3.5.4",
     "i18next": "^26.3.4",
