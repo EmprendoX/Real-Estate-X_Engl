@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createPagesSupabaseClient } from "@/lib/supabase/pagesAuth";
-import { getBrokerSession } from "@/utils/adminAuth";
 
 interface LoginResponse {
   ok: boolean;
@@ -22,23 +21,56 @@ export default async function handler(
 
   try {
     const supabase = createPagesSupabaseClient(req, res);
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data: signIn, error } = await supabase.auth.signInWithPassword({
       email: email.trim().toLowerCase(),
       password,
     });
-    if (error) {
+    if (error || !signIn.user) {
       return res.status(401).json({ ok: false, message: "Credenciales inválidas" });
     }
 
-    // Verify the newly-authed user is actually the broker for THIS site.
-    const session = await getBrokerSession(req, res);
-    if (!session) {
-      // Auth succeeded but they're not linked to this cliente / site.
+    // Reuse the SAME supabase client that just authenticated to validate
+    // scope. Creating a fresh client here would try to read cookies from
+    // the request — but the cookies just set live in the response, not the
+    // request, so a fresh client sees an anonymous session and rejects.
+    const userId = signIn.user.id;
+    const clientId = process.env.CLIENT_ID;
+
+    if (!clientId) {
+      await supabase.auth.signOut();
+      return res.status(403).json({
+        ok: false,
+        message: "Este sitio no tiene CLIENT_ID configurado — contactá al equipo RealEX",
+      });
+    }
+
+    const [{ data: role }, { data: cliente }] = await Promise.all([
+      supabase.from("user_roles").select("role").eq("user_id", userId).maybeSingle(),
+      supabase.from("clientes").select("id").eq("user_id", userId).maybeSingle(),
+    ]);
+
+    if (!role || (role.role !== "broker" && role.role !== "operator") || !cliente) {
       await supabase.auth.signOut();
       return res.status(403).json({
         ok: false,
         message: "Tu usuario no está autorizado para administrar este sitio",
       });
+    }
+
+    if (role.role === "broker") {
+      const { data: sitio } = await supabase
+        .from("sitios")
+        .select("id")
+        .eq("cliente_id", cliente.id)
+        .eq("id", clientId)
+        .maybeSingle();
+      if (!sitio) {
+        await supabase.auth.signOut();
+        return res.status(403).json({
+          ok: false,
+          message: "Tu usuario está vinculado a otro sitio, no a este",
+        });
+      }
     }
 
     return res.status(200).json({ ok: true, message: "Login exitoso" });
