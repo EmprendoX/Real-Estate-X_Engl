@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { requireAuth } from "@/utils/adminAuth";
+import { guardReadOnly } from "@/utils/adminReadOnly";
 import { getEffectiveAbout, saveAbout } from "@/utils/storage";
 import type { AboutContent } from "@/data/aboutPage";
 
@@ -18,6 +19,7 @@ export default async function handler(
   res: NextApiResponse<AboutResponse>
 ) {
   if (!requireAuth(req, res)) return;
+  if (guardReadOnly(req, res)) return;
 
   const locale = normalizeLocale(req.query.locale);
   if (!locale) {

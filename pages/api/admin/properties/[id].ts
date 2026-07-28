@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { requireAuth } from "@/utils/adminAuth";
+import { guardReadOnly } from "@/utils/adminReadOnly";
 import { getEffectiveProperties, saveProperties } from "@/utils/storage";
 import { Property } from "@/data/properties";
 
@@ -18,6 +19,7 @@ export default async function handler(
   if (!requireAuth(req, res)) {
     return;
   }
+  if (guardReadOnly(req, res)) return;
 
   const { id } = req.query;
 

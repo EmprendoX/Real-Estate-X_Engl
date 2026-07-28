@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { requireAuth } from "@/utils/adminAuth";
+import { guardReadOnly } from "@/utils/adminReadOnly";
 import { saveSiteConfig } from "@/utils/storage";
 import { SiteConfig } from "@/config/siteConfig";
 
@@ -16,6 +17,7 @@ export default async function handler(
   if (!requireAuth(req, res)) {
     return;
   }
+  if (guardReadOnly(req, res)) return;
 
   if (req.method !== "PUT") {
     return res.status(405).json({
