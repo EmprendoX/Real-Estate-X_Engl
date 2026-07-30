@@ -5,7 +5,7 @@ const nextConfig = {
   reactStrictMode: true,
   i18n,
   images: {
-    domains: ['images.unsplash.com', 'via.placeholder.com'],
+    domains: ['images.unsplash.com', 'via.placeholder.com', 'adzhwcywtpexvtcgqhsv.supabase.co'],
   },
   // Ensure the translation JSON files are bundled into the serverless
   // functions that render ISR pages (revalidate/fallback). Without this,
